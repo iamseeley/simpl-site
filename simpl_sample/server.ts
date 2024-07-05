@@ -14,7 +14,14 @@ const config: WebsiteConfig = {
         minDepth: 2,
         maxDepth: 4
       }
-    },
+      },
+      {
+      name: "LastModifiedPlugin",
+      options: {
+        contentTypes: ["blog"],
+        routes: ["/about"]
+      }
+    }
   ],
   defaultContentType: "page",
   templateDir: "./templates",
