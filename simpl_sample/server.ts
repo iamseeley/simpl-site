@@ -10,7 +10,7 @@ const config: WebsiteConfig = {
     {
       name: "TableOfContentsPlugin",
       options: {
-        routes: ["/plugin-example"],
+        routes: ["/plugin-example", "/plugin-docs"],
         minDepth: 2,
         maxDepth: 4
       }
@@ -27,6 +27,7 @@ const config: WebsiteConfig = {
   templateDir: "./templates",
   customPluginsDir: "./plugins",
   assetsDir: "./assets",
+  siteTitle: "My Simpl Site",
 };
 
 
