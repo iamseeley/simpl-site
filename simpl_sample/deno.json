@@ -1,0 +1,8 @@
+{
+"tasks": {
+    "dev": "deno run --allow-read --allow-write --allow-net server.ts"
+    },
+    "imports": {
+        "handlebars": "https://deno.land/x/handlebars@v0.10.0/mod.ts"
+    }
+}

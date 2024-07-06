@@ -14,6 +14,7 @@ export class SimplSite {
   private markdownProcessor: MarkdownProcessor;
   private templateEngine: TemplateEngine;
   private siteUrl: string;
+  private siteTitle: string;
 
   constructor(private config: WebsiteConfig) {
     this.contentSources = config.contentSources;
@@ -22,6 +23,7 @@ export class SimplSite {
     this.customPluginsDir = config.customPluginsDir;
     this.assetsDir = config.assetsDir || 'assets';
     this.siteUrl = config.siteUrl || 'http://localhost:8000';
+    this.siteTitle = config.siteTitle || "My Simpl Site";
     this.markdownProcessor = new MarkdownProcessor();
     this.templateEngine = new TemplateEngine({
       baseDir: this.templateDir,
@@ -87,7 +89,7 @@ export class SimplSite {
     return { content: processedContent, metadata };
   }
   
-  async renderContent(path: string, type: string, route: string): Promise<string> {
+  async renderContent(path: string, type: string, route: string): Promise<{ content: string; status: number }> {
     try {
       console.log(`Rendering content for path: ${path}, type: ${type}, route: ${route}`);
       
@@ -101,7 +103,7 @@ export class SimplSite {
         content: processedContent,
         metadata: metadata,
         route: route,
-        
+        siteTitle: this.siteTitle,
       };
   
       // Allow plugins to extend template context
@@ -113,10 +115,27 @@ export class SimplSite {
   
       const renderedContent = await this.templateEngine.render(type, templateContext);
       console.log('Template rendering complete');
-      return renderedContent;
+      
+      return { content: renderedContent, status: 200 };
     } catch (error) {
       console.error('Error during content rendering:', error);
-      return `Error rendering content: ${error.message}`;
+  
+      // If the error is NotFound and we're not already trying to render the 404 page
+      if (error.name === "NotFound" && path !== "404.md") {
+        try {
+          console.log('Attempting to render 404 page');
+          const { content: notFoundContent } = await this.renderContent("404.md", this.defaultContentType, "/404");
+          return { content: notFoundContent, status: 404 };
+        } catch (notFoundError) {
+          console.error('Error rendering 404 page:', notFoundError);
+        }
+      }
+  
+      // Default error message if 404 page is not found or for other types of errors
+      return {
+        content: "<h1>404 - Page Not Found</h1><p>The requested page could not be found.</p>",
+        status: 404
+      };
     }
   }
 
@@ -135,37 +154,36 @@ export class SimplSite {
     }
   }
 
-  async handleRequest(path: string): Promise<{ content: string | Uint8Array; contentType: string }> {
+  async handleRequest(path: string): Promise<{ content: string | Uint8Array; contentType: string; status: number }> {
     console.log(`Handling request for path: ${path}`);
-
+  
     // Remove leading slash and handle root path
     path = path.replace(/^\//, '');
     if (path === '') {
       path = 'index';
     }
-
+  
     // Check if the request is for a static file
     const staticFile = await this.serveStaticFile(path);
     if (staticFile) {
       console.log(`Serving static file: ${path}`);
-      return staticFile;
+      return { ...staticFile, status: 200 };
     }
-
+  
     // If not a static file, proceed with content rendering
     console.log(`Rendering content for path: ${path}`);
     const originalPath = path;
     path = path.endsWith('.md') ? path : path + '.md';
-
-    let content: string;
+  
     for (const source of this.contentSources) {
       if (originalPath.startsWith(source.route)) {
         const contentPath = path.slice(source.route.length);
-        content = await this.renderContent(contentPath, source.type, '/' + originalPath);
-        return { content, contentType: "text/html" };
+        const { content, status } = await this.renderContent(contentPath, source.type, '/' + originalPath);
+        return { content, contentType: "text/html", status };
       }
     }
-
-    content = await this.renderContent(path, this.defaultContentType, '/' + originalPath);
-    return { content, contentType: "text/html" };
+  
+    const { content, status } = await this.renderContent(path, this.defaultContentType, '/' + originalPath);
+    return { content, contentType: "text/html", status };
   }
 }

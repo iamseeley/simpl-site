@@ -45,6 +45,7 @@ export interface WebsiteConfig {
   templateHelpers?: Record<string, unknown>;
   templateCompilerOptions?: Record<string, unknown>;
   siteUrl?: string;  
+  siteTitle?: string;
 }
 
 export interface Metadata {
