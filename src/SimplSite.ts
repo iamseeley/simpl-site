@@ -13,6 +13,7 @@ export class SimplSite {
   private assetsDir: string;
   private markdownProcessor: MarkdownProcessor;
   private templateEngine: TemplateEngine;
+  private siteUrl: string;
 
   constructor(private config: WebsiteConfig) {
     this.contentSources = config.contentSources;
@@ -20,6 +21,7 @@ export class SimplSite {
     this.templateDir = config.templateDir;
     this.customPluginsDir = config.customPluginsDir;
     this.assetsDir = config.assetsDir || 'assets';
+    this.siteUrl = config.siteUrl || 'http://localhost:8000';
     this.markdownProcessor = new MarkdownProcessor();
     this.templateEngine = new TemplateEngine({
       baseDir: this.templateDir,
@@ -30,18 +32,16 @@ export class SimplSite {
   }
 
   private async initializePlugins(pluginConfigs: PluginConfig[]) {
+    console.log("Initializing plugins...");
     for (const pluginConfig of pluginConfigs) {
       if (this.customPluginsDir) {
         try {
           const pluginPath = join(Deno.cwd(), this.customPluginsDir, `${pluginConfig.name}.ts`);
+          console.log(`Loading plugin from: ${pluginPath}`);
           const PluginClass = await import(pluginPath);
           const plugin = new PluginClass.default(pluginConfig.options) as Plugin;
           this.plugins.set(pluginConfig.name, plugin);
-          
-          // Run beforeBuild if defined
-          if (plugin.beforeBuild) {
-            await plugin.beforeBuild();
-          }
+          console.log(`Successfully loaded and initialized plugin: ${pluginConfig.name}`);
         } catch (error) {
           console.error(`Error loading plugin ${pluginConfig.name}:`, error);
         }
@@ -49,6 +49,7 @@ export class SimplSite {
         console.error(`Unable to load plugin ${pluginConfig.name}: No custom plugins directory specified`);
       }
     }
+    console.log(`Initialization complete. Loaded plugins: ${Array.from(this.plugins.keys()).join(', ')}`);
   }
 
   async getContent(path: string, type: string): Promise<string> {
@@ -62,16 +63,17 @@ export class SimplSite {
 
   async processContent(content: string, type: string, route: string): Promise<{ content: string; metadata: Metadata }> {
     let { content: processedContent, metadata } = await this.markdownProcessor.execute(content);
-
+  
     const context: PluginContext = {
       contentType: type,
       route: route,
       templateDir: this.templateDir,
       contentSources: Object.fromEntries(
         this.contentSources.map(source => [source.type, source.path])
-      )
+      ),
+      siteUrl: this.siteUrl 
     };
-
+  
     for (const plugin of this.plugins.values()) {
       if (plugin.transform) {
         const result = await plugin.transform(processedContent, context);
@@ -81,34 +83,34 @@ export class SimplSite {
         }
       }
     }
-
+  
     return { content: processedContent, metadata };
   }
-
+  
   async renderContent(path: string, type: string, route: string): Promise<string> {
     try {
       console.log(`Rendering content for path: ${path}, type: ${type}, route: ${route}`);
       
       const content = await this.getContent(path, type);
       console.log('Raw content retrieved');
-
+  
       const { content: processedContent, metadata } = await this.processContent(content, type, route);
       console.log('Content processed');
-
+  
       let templateContext: TemplateContext = {
-        ...metadata,
-        content: processedContent
+        content: processedContent,
+        metadata: metadata,
+        route: route,
+        
       };
-
+  
       // Allow plugins to extend template context
       for (const plugin of this.plugins.values()) {
         if (plugin.extendTemplate) {
-          const extendedContext = await plugin.extendTemplate(templateContext);
-          // Merge the extended context while ensuring 'content' is preserved
-          templateContext = Object.assign({}, extendedContext, { content: templateContext.content });
+          templateContext = await plugin.extendTemplate(templateContext);
         }
       }
-
+  
       const renderedContent = await this.templateEngine.render(type, templateContext);
       console.log('Template rendering complete');
       return renderedContent;

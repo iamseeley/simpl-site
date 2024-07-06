@@ -4,32 +4,23 @@ export interface ContentSource {
   route: string;
 }
 
-
 export interface PluginContext {
   contentType: string;
   route: string;
   templateDir: string;
   contentSources: Record<string, string>;
+  siteUrl: string; 
 }
 
 export interface Plugin {
   name: string;
-
-  // Called for each content item
+  // Called for each content item during rendering
   transform?(content: string, context: PluginContext): Promise<{
     content: string;
     metadata?: Metadata;
   }>;
-
-  // Called once before processing all content
-  beforeBuild?(): Promise<void>;
-
-  // Called once after processing all content
-  afterBuild?(): Promise<void>;
-
   // Called for each template render
-  extendTemplate?(templateContext: Record<string, unknown>): Promise<Record<string, unknown>>;
-
+  extendTemplate?(templateContext: TemplateContext): Promise<TemplateContext>;
 }
 
 export interface PluginConfig {
@@ -39,9 +30,10 @@ export interface PluginConfig {
 
 export interface TemplateContext {
   content: string;
+  metadata: Metadata;
+  route: string;
   [key: string]: unknown;
-};
-
+}
 
 export interface WebsiteConfig {
   contentSources: ContentSource[];
@@ -52,9 +44,9 @@ export interface WebsiteConfig {
   assetsDir?: string;
   templateHelpers?: Record<string, unknown>;
   templateCompilerOptions?: Record<string, unknown>;
+  siteUrl?: string;  
 }
 
 export interface Metadata {
   [key: string]: string | number | boolean | null | undefined;
 }
-
