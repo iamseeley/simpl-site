@@ -1,4 +1,4 @@
-import { marked } from 'https://deno.land/x/marked/mod.ts';
+import { marked } from "npm:marked@4.0.0";
 import { Metadata } from "../types.ts";
 
 const parseMetadata = (content: string): { metadata: Metadata; body: string } => {

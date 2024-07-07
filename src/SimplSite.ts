@@ -1,5 +1,5 @@
-import { join, extname } from "https://deno.land/std/path/mod.ts";
-import { contentType } from "https://deno.land/std@0.224.0/media_types/mod.ts";
+import { join, extname } from "jsr:@std/path@0.224.0";
+import { contentType } from "jsr:@std/media-types@0.224.0";
 import type { WebsiteConfig, ContentSource, Plugin, PluginConfig, Metadata, PluginContext, TemplateContext } from "./types.ts";
 import MarkdownProcessor from "./utils/MarkdownProcessor.ts";
 import { TemplateEngine } from "./utils/TemplateEngine.ts";

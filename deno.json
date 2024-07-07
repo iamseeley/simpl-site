@@ -1,18 +1,28 @@
 {
+  "name": "@iamseeley/simpl-site",
+  "version": "1.0.0",
+  "exports": {
+    ".": "./mod.ts",
+    "./cli": "./src/cli.ts"
+  },
+  "publish": {
+    "include": ["mod.ts", "src/", "README.md", "LICENSE"],
+    "exclude": []
+  },
   "compilerOptions": {
     "allowJs": true,
     "lib": ["deno.window"],
     "strict": true
   },
   "lint": {
-    "include": ["src/"],
+    "include": ["src/", "mod.ts"],
     "exclude": [],
     "rules": {
       "tags": ["recommended"]
     }
   },
   "fmt": {
-    "include": ["src/"],
+    "include": ["src/", "mod.ts"],
     "exclude": [],
     "options": {
       "useTabs": false,
@@ -22,13 +32,8 @@
       "proseWrap": "always"
     }
   },
-  "test": {
-    "include": ["tests/"],
-    "exclude": []
-  },
   "tasks": {
-    "start": "deno run --allow-read --allow-write src/cli.ts",
-    "test": "deno test --allow-read --allow-write tests/"
+    "start": "deno run --allow-read --allow-write src/cli.ts"
   },
   "imports": {
     "handlebars": "https://deno.land/x/handlebars@v0.10.0/mod.ts"

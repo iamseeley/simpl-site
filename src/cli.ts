@@ -1,7 +1,18 @@
-import { parse } from "https://deno.land/std@0.181.0/flags/mod.ts";
-import { ensureDir, exists } from "https://deno.land/std@0.181.0/fs/mod.ts";
-import { join } from "https://deno.land/std@0.181.0/path/mod.ts";
-import { Input } from "https://deno.land/x/cliffy@v0.25.7/prompt/mod.ts";
+import { parseArgs } from "jsr:@std/cli@0.224.0";
+import { ensureDir, exists } from "jsr:@std/fs@0.224.0";
+import { join } from "jsr:@std/path@0.224.0";
+
+interface ParsedArgs {
+  _: string[];
+  [key: string]: unknown;
+}
+
+async function prompt(message: string): Promise<string> {
+  const buf = new Uint8Array(1024);
+  await Deno.stdout.write(new TextEncoder().encode(message + " "));
+  const n = await Deno.stdin.read(buf);
+  return new TextDecoder().decode(buf.subarray(0, n!)).trim();
+}
 
 async function initializeWebsite(projectName: string) {
   const projectDir = join(Deno.cwd(), projectName);
@@ -114,7 +125,6 @@ Enjoy building your website!
 
   await Deno.writeTextFile(join(projectDir, "content", "index.md"), samplePageContent);
 
-
   const sampleCssContent = `
 body {
   font-family: Arial, sans-serif;
@@ -153,14 +163,20 @@ console.log('Welcome to your new simpl-site website!');
 }
 
 async function main() {
-  const args = parse(Deno.args);
-  let projectName = args._[0] as string;
+  const args = parseArgs(Deno.args) as ParsedArgs;
+
+  let projectName = args._.length > 0 ? args._[0] as string : undefined;
 
   if (!projectName) {
-    projectName = await Input.prompt("Enter your project name:");
+    // Use custom prompt function for interactive input
+    projectName = await prompt("Enter project name:");
   }
 
-  await initializeWebsite(projectName);
+  if (projectName) {
+    await initializeWebsite(projectName);
+  } else {
+    console.error("Project name is required.");
+  }
 }
 
 if (import.meta.main) {
