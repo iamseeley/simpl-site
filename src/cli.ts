@@ -29,11 +29,17 @@ async function initializeWebsite(projectName: string) {
   await ensureDir(join(projectDir, "assets", "css"));
   await ensureDir(join(projectDir, "assets", "js"));
 
-  const configContent = `import { WebsiteConfig } from "jsr:@iamseeley/simpl-site@1.0.1";
+  const configContent = `import { WebsiteConfig } from "jsr:@iamseeley/simpl-site";
 import TableOfContentsPlugin from './plugins/TableOfContentsPlugin.ts';
 import LastModifiedPlugin from './plugins/LastModifiedPlugin.ts';
-import { registerPluginType } from 'jsr:@iamseeley/simpl-site@1.0.1/plugin-registry';
+import { registerPluginType } from 'jsr:@iamseeley/simpl-site/plugin-registry';
 
+// register your plugins
+registerPluginType("TableOfContentsPlugin", TableOfContentsPlugin);
+registerPluginType("LastModifiedPlugin", LastModifiedPlugin);
+
+
+// configure your website
   export const config: WebsiteConfig = {
     contentSources: [
       { path: "./content/blog", type: "blog", route: "blog/" },
@@ -66,7 +72,7 @@ import { registerPluginType } from 'jsr:@iamseeley/simpl-site@1.0.1/plugin-regis
   
 await Deno.writeTextFile(join(projectDir, "config.ts"), configContent);
 
-const serverContent = `import { SimplSite } from "jsr:@iamseeley/simpl-site@1.0.1";
+const serverContent = `import { SimplSite } from "jsr:@iamseeley/simpl-site";
   import { config } from "./config.ts";
   
   const website = new SimplSite(config);
