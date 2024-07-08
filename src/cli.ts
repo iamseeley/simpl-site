@@ -238,7 +238,7 @@ const denoJsonContent = {
   }
 };
 
-const tocPluginContent = `import type { Plugin, Metadata, PluginContext } from "@iamseeley/simpl-site";
+const tocPluginContent = `import type { Plugin, Metadata, PluginContext } from "jsr:@iamseeley/simpl-site";
 
 interface TOCItem {
   level: number;
@@ -345,7 +345,7 @@ export default class TableOfContentsPlugin implements Plugin {
 
 await Deno.writeTextFile(join(projectDir, "plugins", "TableOfContentsPlugin.ts"), tocPluginContent);
 
-const lastModifiedPluginContent = `import type { Plugin, Metadata, PluginContext } from "@iamseeley/simpl-site";
+const lastModifiedPluginContent = `import type { Plugin, Metadata, PluginContext } from "jsr:@iamseeley/simpl-site";
 import { join, basename } from "jsr:@std/path@0.218.2";
 
 interface LastModifiedConfig {
