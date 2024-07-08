@@ -66,7 +66,7 @@ import { registerPluginType } from '../src/utils/PluginRegistry.ts';
   
 await Deno.writeTextFile(join(projectDir, "config.ts"), configContent);
 
-const serverContent = `import { SimplSite } from "jsr:@your-username/simpl-site@1.0.0";
+const serverContent = `import { SimplSite } from "jsr:@iamseeley/simpl-site@1.0.0";
   import { config } from "./config.ts";
   
   const website = new SimplSite(config);
