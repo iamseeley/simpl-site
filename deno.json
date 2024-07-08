@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "exports": {
     ".": "./mod.ts",
-    "./cli": "./src/cli.ts"
+    "./cli": "./src/cli.ts",
+    "./plugin-registry": "./src/utils/PluginRegistry.ts"
   },
   "publish": {
     "include": ["mod.ts", "src/", "README.md", "LICENSE"],

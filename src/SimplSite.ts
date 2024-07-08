@@ -3,6 +3,7 @@ import { contentType } from "jsr:@std/media-types@0.224.0";
 import type { WebsiteConfig, ContentSource, Plugin, PluginConfig, Metadata, PluginContext, TemplateContext } from "./types.ts";
 import MarkdownProcessor from "./utils/MarkdownProcessor.ts";
 import { TemplateEngine } from "./utils/TemplateEngine.ts";
+import { getPluginClass } from './utils/PluginRegistry.ts';
 
 export class SimplSite {
   private plugins: Map<string, Plugin> = new Map();
@@ -33,25 +34,17 @@ export class SimplSite {
     this.initializePlugins(config.plugins);
   }
 
-  private async initializePlugins(pluginConfigs: PluginConfig[]) {
-    console.log("Initializing plugins...");
+  private initializePlugins(pluginConfigs: PluginConfig[]) {
     for (const pluginConfig of pluginConfigs) {
-      if (this.customPluginsDir) {
-        try {
-          const pluginPath = join(Deno.cwd(), this.customPluginsDir, `${pluginConfig.name}.ts`);
-          console.log(`Loading plugin from: ${pluginPath}`);
-          const PluginClass = await import(pluginPath);
-          const plugin = new PluginClass.default(pluginConfig.options) as Plugin;
-          this.plugins.set(pluginConfig.name, plugin);
-          console.log(`Successfully loaded and initialized plugin: ${pluginConfig.name}`);
-        } catch (error) {
-          console.error(`Error loading plugin ${pluginConfig.name}:`, error);
-        }
-      } else {
-        console.error(`Unable to load plugin ${pluginConfig.name}: No custom plugins directory specified`);
+      try {
+        const PluginClass = getPluginClass(pluginConfig.name);
+        const plugin = new PluginClass(pluginConfig.options);
+        this.plugins.set(pluginConfig.name, plugin);
+        console.log(`Successfully loaded and initialized plugin: ${pluginConfig.name}`);
+      } catch (error) {
+        console.error(`Error loading plugin ${pluginConfig.name}:`, error);
       }
     }
-    console.log(`Initialization complete. Loaded plugins: ${Array.from(this.plugins.keys()).join(', ')}`);
   }
 
   async getContent(path: string, type: string): Promise<string> {

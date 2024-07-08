@@ -29,7 +29,10 @@ async function initializeWebsite(projectName: string) {
   await ensureDir(join(projectDir, "assets", "css"));
   await ensureDir(join(projectDir, "assets", "js"));
 
-  const configContent = `import { WebsiteConfig } from "jsr:@your-username/simpl-site@1.0.0";
+  const configContent = `import { WebsiteConfig } from "jsr:@iamseeley/simpl-site@1.0.0";
+import TableOfContentsPlugin from './plugins/TableOfContentsPlugin.ts';
+import LastModifiedPlugin from './plugins/LastModifiedPlugin.ts';
+import { registerPluginType } from '../src/utils/PluginRegistry.ts';
 
   export const config: WebsiteConfig = {
     contentSources: [

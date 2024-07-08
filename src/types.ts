@@ -1,3 +1,7 @@
+import type { HelperDelegate, RuntimeOptions } from "npm:@types/handlebars@4.1.0";
+
+export { HelperDelegate, RuntimeOptions };
+
 export interface ContentSource {
   path: string;
   type: string;
@@ -9,17 +13,15 @@ export interface PluginContext {
   route: string;
   templateDir: string;
   contentSources: Record<string, string>;
-  siteUrl: string; 
+  siteUrl: string;
 }
 
 export interface Plugin {
   name: string;
-  // Called for each content item during rendering
   transform?(content: string, context: PluginContext): Promise<{
     content: string;
     metadata?: Metadata;
   }>;
-  // Called for each template render
   extendTemplate?(templateContext: TemplateContext): Promise<TemplateContext>;
 }
 
@@ -35,6 +37,16 @@ export interface TemplateContext {
   [key: string]: unknown;
 }
 
+export interface TemplateEngineConfig {
+  baseDir: string;
+  extname: string;
+  layoutsDir: string;
+  partialsDir: string;
+  defaultLayout: string;
+  helpers?: { [name: string]: HelperDelegate };
+  compilerOptions?: RuntimeOptions;
+}
+
 export interface WebsiteConfig {
   contentSources: ContentSource[];
   plugins: PluginConfig[];
@@ -42,9 +54,9 @@ export interface WebsiteConfig {
   templateDir: string;
   customPluginsDir?: string;
   assetsDir?: string;
-  templateHelpers?: Record<string, unknown>;
-  templateCompilerOptions?: Record<string, unknown>;
-  siteUrl?: string;  
+  templateHelpers?: { [name: string]: HelperDelegate };
+  templateCompilerOptions?: RuntimeOptions;
+  siteUrl?: string;
   siteTitle?: string;
 }
 

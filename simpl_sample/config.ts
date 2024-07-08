@@ -1,5 +1,14 @@
 import { WebsiteConfig } from "../mod.ts";
+import TableOfContentsPlugin from './plugins/TableOfContentsPlugin.ts';
+import LastModifiedPlugin from './plugins/LastModifiedPlugin.ts';
+import { registerPluginType } from '../src/utils/PluginRegistry.ts';
 
+// register your plugins
+registerPluginType("TableOfContentsPlugin", TableOfContentsPlugin);
+registerPluginType("LastModifiedPlugin", LastModifiedPlugin);
+
+
+// configure your website
 export const config: WebsiteConfig = {
   contentSources: [
     { path: "./content/blog", type: "blog", route: "blog/" },

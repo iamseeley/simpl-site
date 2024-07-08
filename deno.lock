@@ -12,9 +12,11 @@
       "jsr:@std/path@0.218.2": "jsr:@std/path@0.218.2",
       "jsr:@std/path@0.224.0": "jsr:@std/path@0.224.0",
       "jsr:@std/path@^0.224.0": "jsr:@std/path@0.224.0",
+      "npm:@types/handlebars@4.1.0": "npm:@types/handlebars@4.1.0",
       "npm:@types/node": "npm:@types/node@18.16.19",
       "npm:cliffy@2.5.1": "npm:cliffy@2.5.1",
       "npm:handlebars@4.7.7": "npm:handlebars@4.7.7",
+      "npm:handlebars@4.7.8": "npm:handlebars@4.7.8",
       "npm:marked": "npm:marked@13.0.1",
       "npm:marked@4.0.0": "npm:marked@4.0.0"
     },
@@ -64,6 +66,12 @@
       }
     },
     "npm": {
+      "@types/handlebars@4.1.0": {
+        "integrity": "sha512-gq9YweFKNNB1uFK71eRqsd4niVkXrxHugqWFQkeLRJvGjnxsLr16bYtcsG4tOFwmYi0Bax+wCkbf1reUfdl4kA==",
+        "dependencies": {
+          "handlebars": "handlebars@4.7.8"
+        }
+      },
       "@types/node@18.16.19": {
         "integrity": "sha512-IXl7o+R9iti9eBW4Wg2hx1xQDig183jj7YLn8F7udNceyfkbn1ZxmzZXuak20gR40D7pIkIY1kYGx5VIGbaHKA==",
         "dependencies": {}
@@ -103,6 +111,16 @@
       },
       "handlebars@4.7.7": {
         "integrity": "sha512-aAcXm5OAfE/8IXkcZvCepKU3VzW1/39Fb5ZuqMtgI/hT8X2YgoMvBY5dLhq/cpOvw7Lk1nK/UF71aLG/ZnVYRA==",
+        "dependencies": {
+          "minimist": "minimist@1.2.8",
+          "neo-async": "neo-async@2.6.2",
+          "source-map": "source-map@0.6.1",
+          "uglify-js": "uglify-js@3.18.0",
+          "wordwrap": "wordwrap@1.0.0"
+        }
+      },
+      "handlebars@4.7.8": {
+        "integrity": "sha512-vafaFqs8MZkRrSX7sFVUdo3ap/eNiLnb4IakshzvP56X5Nr1iGKAIqdX6tMlm6HcNRIkr6AxO5jFEoJzzpT8aQ==",
         "dependencies": {
           "minimist": "minimist@1.2.8",
           "neo-async": "neo-async@2.6.2",
