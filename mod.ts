@@ -1,2 +1,10 @@
 export { SimplSite } from "./src/SimplSite.ts";
-export type { WebsiteConfig, ContentSource, Plugin } from "./src/types.ts";
+export type {
+    Plugin,
+    Metadata,
+    PluginContext,
+    WebsiteConfig,
+    ContentSource,
+    PluginConfig,
+    TemplateContext
+  } from "./src/types.ts";

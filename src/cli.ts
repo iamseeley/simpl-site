@@ -29,10 +29,10 @@ async function initializeWebsite(projectName: string) {
   await ensureDir(join(projectDir, "assets", "css"));
   await ensureDir(join(projectDir, "assets", "js"));
 
-  const configContent = `import { WebsiteConfig } from "jsr:@iamseeley/simpl-site@1.0.0";
+  const configContent = `import { WebsiteConfig } from "jsr:@iamseeley/simpl-site@1.0.1";
 import TableOfContentsPlugin from './plugins/TableOfContentsPlugin.ts';
 import LastModifiedPlugin from './plugins/LastModifiedPlugin.ts';
-import { registerPluginType } from '../src/utils/PluginRegistry.ts';
+import { registerPluginType } from 'jsr:@iamseeley/simpl-site@1.0.1/plugin-registry';
 
   export const config: WebsiteConfig = {
     contentSources: [
@@ -66,7 +66,7 @@ import { registerPluginType } from '../src/utils/PluginRegistry.ts';
   
 await Deno.writeTextFile(join(projectDir, "config.ts"), configContent);
 
-const serverContent = `import { SimplSite } from "jsr:@iamseeley/simpl-site@1.0.0";
+const serverContent = `import { SimplSite } from "jsr:@iamseeley/simpl-site@1.0.1";
   import { config } from "./config.ts";
   
   const website = new SimplSite(config);
@@ -232,7 +232,7 @@ const denoJsonContent = {
   }
 };
 
-const tocPluginContent = `import type { Plugin, Metadata, PluginContext } from "../../src/types.ts";
+const tocPluginContent = `import type { Plugin, Metadata, PluginContext } from "@iamseeley/simpl-site";
 
 interface TOCItem {
   level: number;
@@ -339,7 +339,7 @@ export default class TableOfContentsPlugin implements Plugin {
 
 await Deno.writeTextFile(join(projectDir, "plugins", "TableOfContentsPlugin.ts"), tocPluginContent);
 
-const lastModifiedPluginContent = `import type { Plugin, Metadata, PluginContext } from "../../src/types.ts";
+const lastModifiedPluginContent = `import type { Plugin, Metadata, PluginContext } from "@iamseeley/simpl-site";
 import { join, basename } from "jsr:@std/path@0.218.2";
 
 interface LastModifiedConfig {
