@@ -52,7 +52,6 @@ export default class TableOfContentsPlugin implements Plugin {
         tocItems.push({ level, text, slug });
         console.log(`Added TOC item: ${text} (level ${level})`);
 
-        // If there's no existing id, add one
         if (!existingId) {
           const newHeader = `<h${level} id="${slug}">${text}</h${level}>`;
           content = content.replace(match[0], newHeader);

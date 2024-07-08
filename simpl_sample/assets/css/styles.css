@@ -8,11 +8,28 @@ body {
   padding: 20px;
 }
 
+a {
+  color: inherit;
+}
+
 header {
   background-color: #f4f4f4;
   padding: 1rem;
   margin-bottom: 1rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }
+
+nav ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: .6rem;
+}
+
+
 
 footer {
   margin-top: 2rem;

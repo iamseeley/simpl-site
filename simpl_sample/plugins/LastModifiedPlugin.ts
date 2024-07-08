@@ -1,5 +1,5 @@
 import type { Plugin, Metadata, PluginContext } from "../../src/types.ts";
-import { join, basename } from "https://deno.land/std/path/mod.ts";
+import { join, basename } from "jsr:@std/path@0.218.2";
 
 interface LastModifiedConfig {
   routes?: string[];
