@@ -1,6 +1,8 @@
 # SimplSite
 
-SimplSite is a flexible server-side rendered website builder built with Deno. Create dynamic websites using Markdown content, Handlebars templates, and a powerful plugin system for extending functionality.
+SimplSite is a flexible server-side rendered website builder built with Deno. 
+
+Create dynamic websites using Markdown content, Handlebars templates, and a powerful plugin system for extending functionality.
 
 ## Features
 
@@ -212,8 +214,6 @@ export default class MyCustomPlugin implements Plugin {
    ]
    ```
 
-Plugins can transform content, add metadata, and extend the data available in templates, allowing for powerful customizations of your website.
-
 ## Development
 
 To start the development server:
@@ -221,8 +221,6 @@ To start the development server:
 ```sh
 deno task dev
 ```
-
-This will start the server and watch for file changes, automatically reloading when you make updates.
 
 ## Deployment
 
@@ -284,8 +282,11 @@ If you prefer to self-host, you can run your SimplSite project on any VPS or ded
 
 ## Contributing
 
-Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+Contributions are very welcome!
 
 ## License
 
 SimplSite is released under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+       😊
+Enjoy 👉👈
