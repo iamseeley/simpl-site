@@ -1,10 +1,7 @@
 /**
- * SimplSite: A flexible server-side rendered website builder for Deno
- * 
- * This module exports the main SimplSite class and related types for building
- * server-side rendered websites using Markdown content and Handlebars templates.
- * 
  * @module
+ * 
+ * @readme README.md
  */
 
 
