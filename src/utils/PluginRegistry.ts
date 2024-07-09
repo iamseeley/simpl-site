@@ -1,3 +1,22 @@
+/**
+ * SimplSite Plugin Registry
+ * 
+ * This module provides functionality for registering and retrieving plugin types
+ * in the SimplSite system. It acts as a central registry for all plugins,
+ * allowing dynamic loading and instantiation of plugins based on configuration.
+ * 
+ * Usage:
+ *   import { registerPluginType, getPluginClass } from "@iamseeley/simpl-site/plugin-registry";
+ * 
+ * The registry allows for:
+ * - Registering new plugin types
+ * - Retrieving plugin classes by name
+ * 
+ * This system enables SimplSite to support a flexible and extensible plugin architecture.
+ * 
+ * @module
+ */
+
 import type { Plugin } from "../types.ts";
 
 const pluginRegistry: Record<string, new (options?: Record<string, unknown>) => Plugin> = {};

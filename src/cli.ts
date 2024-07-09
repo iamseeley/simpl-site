@@ -1,3 +1,21 @@
+/**
+ * SimplSite CLI
+ * 
+ * This module provides the command-line interface for SimplSite, allowing users
+ * to create and manage SimplSite projects from the terminal.
+ * 
+ * Usage:
+ *   deno run --allow-read --allow-write --allow-net jsr:@iamseeley/simpl-site/cli
+ * 
+ * Commands:
+ *   - Create a new project: Simply run the CLI and follow the prompts
+ * 
+ * The CLI checks for Deno installation, guides the user through project creation,
+ * and sets up the initial project structure and configuration.
+ * 
+ * @module
+ */
+
 import { parseArgs } from "jsr:@std/cli@0.224.0";
 import { ensureDir, exists } from "jsr:@std/fs@0.224.0";
 import { join } from "jsr:@std/path@0.224.0";
