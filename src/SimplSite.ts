@@ -5,6 +5,9 @@ import MarkdownProcessor from "./utils/MarkdownProcessor.ts";
 import { TemplateEngine } from "./utils/TemplateEngine.ts";
 import { getPluginClass } from './utils/PluginRegistry.ts';
 
+/**
+ * SimplSite is the main class for creating and managing the server-side rendered website.
+ */
 export class SimplSite {
   private plugins: Map<string, Plugin> = new Map();
   private contentSources: ContentSource[];
@@ -17,6 +20,10 @@ export class SimplSite {
   private siteUrl: string;
   private siteTitle: string;
 
+/**
+   * Creates a new SimplSite instance.
+   * @param config - The configuration object for the website.
+   */
   constructor(private config: WebsiteConfig) {
     this.contentSources = config.contentSources;
     this.defaultContentType = config.defaultContentType;
@@ -47,6 +54,13 @@ export class SimplSite {
     }
   }
 
+
+/**
+   * Retrieves content from the specified path and content type.
+   * @param path - The path to the content file.
+   * @param type - The type of content to retrieve.
+   * @returns A promise that resolves to the content as a string.
+   */
   async getContent(path: string, type: string): Promise<string> {
     const source = this.contentSources.find(src => src.type === type);
     if (!source) {
@@ -56,6 +70,13 @@ export class SimplSite {
     return await Deno.readTextFile(fullPath);
   }
 
+    /**
+   * Processes the content through the configured plugins and markdown processor.
+   * @param content - The raw content to process.
+   * @param type - The type of content being processed.
+   * @param route - The route associated with the content.
+   * @returns A promise that resolves to an object containing the processed content and metadata.
+   */
   async processContent(content: string, type: string, route: string): Promise<{ content: string; metadata: Metadata }> {
     let { content: processedContent, metadata } = await this.markdownProcessor.execute(content);
   
@@ -147,6 +168,11 @@ export class SimplSite {
     }
   }
 
+  /**
+   * Handles an incoming request and returns the appropriate response.
+   * @param path - The path of the request.
+   * @returns A promise that resolves to an object containing the content, content type, and status code.
+   */
   async handleRequest(path: string): Promise<{ content: string | Uint8Array; contentType: string; status: number }> {
     console.log(`Handling request for path: ${path}`);
   
