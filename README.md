@@ -1,5 +1,7 @@
 # SimplSite
 
+[![JSR](https://jsr.io/badges/@iamseeley/simpl-site)](https://jsr.io/@iamseeley/simpl-site)
+
 SimplSite is a flexible server-side rendered website builder built with Deno. 
 
 Create dynamic websites using Markdown content, Handlebars templates, and a powerful plugin system for extending functionality.
