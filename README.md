@@ -288,5 +288,5 @@ Contributions are very welcome!
 
 SimplSite is released under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-       😊
-Enjoy 👉👈
+           😊
+    Enjoy 👉👈
