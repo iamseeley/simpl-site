@@ -23,9 +23,10 @@ import { join } from "jsr:@std/path@0.224.0";
 interface ParsedArgs {
   _: string[];
   [key: string]: unknown;
+  smallWeb?: boolean;
 }
 
-async function initializeWebsite(projectName: string) {
+async function initializeWebsite(projectName: string, isSmallWeb: boolean) {
   const projectDir = join(Deno.cwd(), projectName);
   if (await exists(projectDir)) {
     console.error(`Error: Directory '${projectName}' already exists.`);
@@ -90,29 +91,90 @@ registerPluginType("LastModifiedPlugin", LastModifiedPlugin);
   
 await Deno.writeTextFile(join(projectDir, "config.ts"), configContent);
 
-const serverContent = `import { SimplSite } from "jsr:@iamseeley/simpl-site";
-  import { config } from "./config.ts";
+// const serverContent = `import { SimplSite } from "jsr:@iamseeley/simpl-site";
+//   import { config } from "./config.ts";
   
-  const website = new SimplSite(config);
+//   const website = new SimplSite(config);
   
-  Deno.serve({ port: 8000 }, async (req: Request) => {
-    const url = new URL(req.url);
-    const path = url.pathname;
+//   Deno.serve({ port: 8000 }, async (req: Request) => {
+//     const url = new URL(req.url);
+//     const path = url.pathname;
   
-    try {
-      const { content, contentType } = await website.handleRequest(path);
-      return new Response(content, {
-        headers: { "content-type": contentType },
-      });
-    } catch (error) {
-      console.error(error);
-      return new Response("404 Not Found", { status: 404 });
-    }
+//     try {
+//       const { content, contentType } = await website.handleRequest(path);
+//       return new Response(content, {
+//         headers: { "content-type": contentType },
+//       });
+//     } catch (error) {
+//       console.error(error);
+//       return new Response("404 Not Found", { status: 404 });
+//     }
+//   });
+  
+//   console.log("Server running on http://localhost:8000");`;
+  
+//   await Deno.writeTextFile(join(projectDir, "server.ts"), serverContent);
+
+  const serverContent = isSmallWeb
+  ? `import { SimplSite } from "jsr:@iamseeley/simpl-site";
+import { config } from "./config.ts";
+
+const website = new SimplSite(config);
+
+async function handleRequest(request: Request): Promise<Response> {
+const url = new URL(request.url);
+const path = url.pathname;
+
+try {
+  const { content, contentType } = await website.handleRequest(path);
+  return new Response(content, {
+    headers: { "content-type": contentType },
   });
-  
-  console.log("Server running on http://localhost:8000");`;
-  
-  await Deno.writeTextFile(join(projectDir, "server.ts"), serverContent);
+} catch (error) {
+  console.error(error);
+  return new Response("404 Not Found", { status: 404 });
+}
+}
+
+export default {
+async fetch(request: Request): Promise<Response> {
+  try {
+    return await handleRequest(request);
+  } catch (error) {
+    console.error("Error handling request:", error);
+    return new Response("Internal Server Error", { status: 500 });
+  }
+}
+};
+
+if (import.meta.main) {
+console.log("Server running on http://localhost:8000");
+Deno.serve({ port: 8000 }, handleRequest);
+}`
+  : `import { SimplSite } from "../mod.ts";
+import { config } from "./config.ts";
+
+const website = new SimplSite(config);
+
+Deno.serve({ port: 8000 }, async (req: Request) => {
+const url = new URL(req.url);
+const path = url.pathname;
+
+try {
+  const { content, contentType } = await website.handleRequest(path);
+  return new Response(content, {
+    headers: { "content-type": contentType },
+  });
+} catch (error) {
+  console.error(error);
+  return new Response("404 Not Found", { status: 404 });
+}
+});
+
+console.log("Server running on http://localhost:8000");`;
+
+await Deno.writeTextFile(join(projectDir, "server.ts"), serverContent);
+
 
   const mainLayoutContent = `<!DOCTYPE html>
 <html lang="en">
@@ -584,6 +646,7 @@ async function main() {
   }
 
   const args = parseArgs(Deno.args) as ParsedArgs;
+  const isSmallWeb = args.smallweb === true;
   let projectName = args._.length > 0 ? args._[0] as string : undefined;
 
   if (!projectName) {
@@ -592,11 +655,15 @@ async function main() {
 
   if (projectName) {
     console.log(`Great! Let's create your new website project: ${projectName}`);
-    await initializeWebsite(projectName);
+    await initializeWebsite(projectName, isSmallWeb);
     console.log(`\nYour Simpl Site project "${projectName}" has been created successfully!`);
     console.log("To start your website:");
     console.log(`1. cd ${projectName}`);
-    console.log("2. deno task dev");
+    if (isSmallWeb) {
+      console.log("2. Follow SmallWeb deployment instructions");
+    } else {
+      console.log("2. deno task dev");
+    }
     console.log("\nHappy building!");
   } else {
     console.error("Project name is required. Please try again.");
