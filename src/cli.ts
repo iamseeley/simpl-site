@@ -115,8 +115,7 @@ await Deno.writeTextFile(join(projectDir, "config.ts"), configContent);
   
 //   await Deno.writeTextFile(join(projectDir, "server.ts"), serverContent);
 
-  const serverContent = isSmallWeb
-  ? `import { SimplSite } from "jsr:@iamseeley/simpl-site";
+  const smallWebServerContent = `import { SimplSite } from "jsr:@iamseeley/simpl-site";
 import { config } from "./config.ts";
 
 const website = new SimplSite(config);
@@ -150,8 +149,9 @@ async fetch(request: Request): Promise<Response> {
 if (import.meta.main) {
 console.log("Server running on http://localhost:8000");
 Deno.serve({ port: 8000 }, handleRequest);
-}`
-  : `import { SimplSite } from "../mod.ts";
+}`;
+
+const serverContent =`import { SimplSite } from "jsr:@iamseeley/simpl-site";
 import { config } from "./config.ts";
 
 const website = new SimplSite(config);
@@ -173,7 +173,12 @@ try {
 
 console.log("Server running on http://localhost:8000");`;
 
-await Deno.writeTextFile(join(projectDir, "server.ts"), serverContent);
+if (isSmallWeb) {
+  await Deno.writeTextFile(join(projectDir, "server.ts"), smallWebServerContent);
+} else {
+  await Deno.writeTextFile(join(projectDir, "server.ts"), serverContent);
+}
+
 
 
   const mainLayoutContent = `<!DOCTYPE html>
