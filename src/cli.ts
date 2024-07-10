@@ -20,11 +20,11 @@ import { parseArgs } from "jsr:@std/cli@0.224.0";
 import { ensureDir, exists } from "jsr:@std/fs@0.224.0";
 import { join } from "jsr:@std/path@0.224.0";
 
-interface ParsedArgs {
-  _: string[];
-  [key: string]: unknown;
-  smallWeb?: boolean;
-}
+// interface ParsedArgs {
+//   _: string[];
+//   [key: string]: unknown;
+//   smallWeb?: boolean;
+// }
 
 async function initializeWebsite(projectName: string, isSmallWeb: boolean) {
   const projectDir = join(Deno.cwd(), projectName);
@@ -639,22 +639,26 @@ async function main() {
 
   console.log("Great! Deno is installed on your system.");
 
-  const startConfirmation = await prompt("Would you like to get started building your website? (y/n):");
-  if (startConfirmation.toLowerCase() !== 'y') {
-    console.log("Maybe next time! Goodbye.");
-    return;
-  }
+  const { _, ...flags } = parseArgs(Deno.args, {
+    boolean: ["smallweb"],
+    string: ["_"],
+  });
 
-  const args = parseArgs(Deno.args) as ParsedArgs;
-  const isSmallWeb = args.smallweb === true;
-  let projectName = args._.length > 0 ? args._[0] as string : undefined;
+  const isSmallWeb = flags.smallweb === true;
+  let projectName = _[0];
 
   if (!projectName) {
+    const startConfirmation = await prompt("Would you like to get started building your website? (y/n):");
+    if (startConfirmation.toLowerCase() !== 'y') {
+      console.log("Maybe next time! Goodbye.");
+      return;
+    }
     projectName = await prompt("Enter your project name:");
   }
 
   if (projectName) {
     console.log(`Great! Let's create your new website project: ${projectName}`);
+    console.log(`SmallWeb mode: ${isSmallWeb ? "enabled" : "disabled"}`);
     await initializeWebsite(projectName, isSmallWeb);
     console.log(`\nYour Simpl Site project "${projectName}" has been created successfully!`);
     console.log("To start your website:");
