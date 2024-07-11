@@ -176,20 +176,17 @@ export class SimplSite {
   async handleRequest(path: string): Promise<{ content: string | Uint8Array; contentType: string; status: number }> {
     console.log(`Handling request for path: ${path}`);
   
-    // Remove leading slash and handle root path
     path = path.replace(/^\//, '');
     if (path === '') {
       path = 'index';
     }
   
-    // Check if the request is for a static file
     const staticFile = await this.serveStaticFile(path);
     if (staticFile) {
       console.log(`Serving static file: ${path}`);
       return { ...staticFile, status: 200 };
     }
   
-    // If not a static file, proceed with content rendering
     console.log(`Rendering content for path: ${path}`);
     const originalPath = path;
     path = path.endsWith('.md') ? path : path + '.md';

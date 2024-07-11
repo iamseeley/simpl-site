@@ -644,13 +644,13 @@ async function main() {
 
   console.log("Great! Deno is installed on your system.");
 
-  const { _, ...flags } = parseArgs(Deno.args, {
+  const parsedArgs = parseArgs(Deno.args, {
     boolean: ["smallweb"],
     string: ["_"],
   });
 
-  const isSmallWeb = flags.smallweb === true;
-  let projectName = _[0];
+  const isSmallWeb = parsedArgs.smallweb === true;
+  let projectName = parsedArgs._[0] as string | undefined;
 
   if (!projectName) {
     const startConfirmation = await prompt("Would you like to get started building your website? (y/n):");
