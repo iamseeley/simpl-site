@@ -320,8 +320,8 @@ await Deno.writeTextFile(join(projectDir, "content", "404.md"), fourOFour);
 const denoJsonContent = {
   tasks: {
     dev: isSmallWeb 
-      ? "deno run --allow-read --allow-write --allow-net main.ts"
-      : "deno run --allow-read --allow-write --allow-net server.ts"
+      ? "deno run --allow-read --allow-write --allow-net --allow-run main.ts"
+      : "deno run --allow-read --allow-write --allow-net --allow-run server.ts"
   }
 };
 

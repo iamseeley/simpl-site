@@ -23,13 +23,13 @@ To use SimplSite, you need Deno installed on your system. If you haven't install
 You can run SimplSite directly using:
 
 ```sh
-deno run --allow-read --allow-write --allow-net jsr:@iamseeley/simpl-site/cli
+deno run --allow-read --allow-write --allow-net --allow-run jsr:@iamseeley/simpl-site/cli
 ```
 
 For convenience, you can install SimplSite globally:
 
 ```sh
-deno install --allow-read --allow-write --allow-net -n simpl-site jsr:@iamseeley/simpl-site/cli
+deno install --allow-read --allow-write --allow-net --allow-run -n simpl-site jsr:@iamseeley/simpl-site/cli
 ```
 
 ## Quick Start
