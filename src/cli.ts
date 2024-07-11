@@ -632,7 +632,7 @@ function getDenoInstallInstructions(): string {
   }
 }
 
-async function main(args: string[]) {
+export async function main(args: string[]) {
   console.log("Hi there, welcome to Simpl Site!");
   console.log("This tool will help you create a new server-side rendered website.");
 
