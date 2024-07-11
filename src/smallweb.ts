@@ -1,3 +1,9 @@
+/**
+ * SmallWeb Plugin
+ * 
+ * @module
+ */
+
 import { main } from './cli.ts';
 
 if (import.meta.main) {
