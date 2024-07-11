@@ -174,7 +174,7 @@ try {
 console.log("Server running on http://localhost:8000");`;
 
 if (isSmallWeb) {
-  await Deno.writeTextFile(join(projectDir, "server.ts"), smallWebServerContent);
+  await Deno.writeTextFile(join(projectDir, "main.ts"), smallWebServerContent);
 } else {
   await Deno.writeTextFile(join(projectDir, "server.ts"), serverContent);
 }
@@ -319,9 +319,16 @@ await Deno.writeTextFile(join(projectDir, "content", "404.md"), fourOFour);
 
 const denoJsonContent = {
   tasks: {
-    dev: "deno run --allow-read --allow-write --allow-net server.ts"
+    dev: isSmallWeb 
+      ? "deno run --allow-read --allow-write --allow-net main.ts"
+      : "deno run --allow-read --allow-write --allow-net server.ts"
   }
 };
+
+await Deno.writeTextFile(
+  join(projectDir, "deno.json"),
+  JSON.stringify(denoJsonContent, null, 2)
+);
 
 const tocPluginContent = `import type { Plugin, Metadata, PluginContext } from "jsr:@iamseeley/simpl-site";
 
@@ -511,10 +518,6 @@ export default class LastModifiedPlugin implements Plugin {
 
 await Deno.writeTextFile(join(projectDir, "plugins", "LastModifiedPlugin.ts"), lastModifiedPluginContent)
 
-await Deno.writeTextFile(
-  join(projectDir, "deno.json"),
-  JSON.stringify(denoJsonContent, null, 2)
-);
 
 const sampleCssContent = `body {
   font-family: Arial, sans-serif;
