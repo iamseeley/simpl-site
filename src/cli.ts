@@ -632,7 +632,7 @@ function getDenoInstallInstructions(): string {
   }
 }
 
-async function main() {
+async function main(args: string[]) {
   console.log("Hi there, welcome to Simpl Site!");
   console.log("This tool will help you create a new server-side rendered website.");
 
@@ -647,7 +647,7 @@ async function main() {
 
   console.log("Great! Deno is installed on your system.");
 
-  const parsedArgs = parseArgs(Deno.args, {
+  const parsedArgs = parseArgs(args, {
     boolean: ["smallweb"],
     string: ["_"],
   });
@@ -678,5 +678,5 @@ async function main() {
 }
 
 if (import.meta.main) {
-  main();
+  main(Deno.args);
 }
