@@ -4,6 +4,7 @@
   "exports": {
     ".": "./mod.ts",
     "./cli": "./src/cli.ts",
+    "./smallweb-simpl-site": "./src/smallweb.ts",
     "./plugin-registry": "./src/utils/PluginRegistry.ts"
   },
   "publish": {
