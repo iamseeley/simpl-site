@@ -656,11 +656,6 @@ async function main() {
   let projectName = parsedArgs._[0] as string | undefined;
 
   if (!projectName) {
-    const startConfirmation = await prompt("Would you like to get started building your website? (y/n):");
-    if (startConfirmation.toLowerCase() !== 'y') {
-      console.log("Maybe next time! Goodbye.");
-      return;
-    }
     projectName = await prompt("Enter your project name:");
   }
 
