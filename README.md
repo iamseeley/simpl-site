@@ -35,7 +35,7 @@ deno install --allow-read --allow-write --allow-net --allow-run -n simpl-site js
 ### [Smallweb](https://github.com/pomdtr/smallweb?tab=readme-ov-file) Plugin
 Navigate to your Smallweb internet folder, and run the following command to initialize a simpl-site website with Smallweb configuration.
 
-```
+```sh
 deno install -Agf jsr:@iamseeley/simpl-site/smallweb-simpl-site
 smallweb simpl-site
 ```
