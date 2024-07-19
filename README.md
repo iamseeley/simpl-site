@@ -32,6 +32,14 @@ For convenience, you can install SimplSite globally:
 deno install --allow-read --allow-write --allow-net --allow-run -n simpl-site jsr:@iamseeley/simpl-site/cli
 ```
 
+### [Smallweb](https://github.com/pomdtr/smallweb?tab=readme-ov-file) Plugin
+Navigate to your Smallweb internet folder and run the following command to initialize a simpl-site with Smallweb configuration.
+
+```
+deno install -Agf jsr:@iamseeley/simpl-site/smallweb-simpl-site
+smallweb simpl-site
+```
+
 ## Quick Start
 
 1. Create a new SimplSite project:
