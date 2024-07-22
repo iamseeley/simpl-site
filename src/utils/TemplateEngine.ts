@@ -43,6 +43,18 @@ export class TemplateEngine {
     }
   }
 
+  private async getCompiledTemplate(templatePath: string): Promise<Handlebars.TemplateDelegate> {
+    if (!this.compiledTemplates.has(templatePath)) {
+      console.log(`Compiling template: ${templatePath}`);
+      const templateContent = await Deno.readTextFile(templatePath);
+      const template = this.handlebars.compile(templateContent, this.config.compilerOptions);
+      this.compiledTemplates.set(templatePath, template);
+    } else {
+      console.log(`Using cached template: ${templatePath}`);
+    }
+    return this.compiledTemplates.get(templatePath)!;
+  }
+
   async render(templateName: string, context: Record<string, unknown>): Promise<string> {
     console.log(`Rendering template: ${templateName}`);
     try {
@@ -53,22 +65,11 @@ export class TemplateEngine {
         throw new Error(`Template not found: ${templatePath}`);
       }
 
-      let template = this.compiledTemplates.get(templatePath);
-      if (!template) {
-        const templateContent = await Deno.readTextFile(templatePath);
-        template = this.handlebars.compile(templateContent, this.config.compilerOptions);
-        this.compiledTemplates.set(templatePath, template);
-      }
-
+      const template = await this.getCompiledTemplate(templatePath);
       let result = template(context);
 
       if (await exists(layoutPath)) {
-        let layout = this.compiledTemplates.get(layoutPath);
-        if (!layout) {
-          const layoutContent = await Deno.readTextFile(layoutPath);
-          layout = this.handlebars.compile(layoutContent, this.config.compilerOptions);
-          this.compiledTemplates.set(layoutPath, layout);
-        }
+        const layout = await this.getCompiledTemplate(layoutPath);
         result = layout({ ...context, body: result });
       }
 
@@ -78,5 +79,17 @@ export class TemplateEngine {
       console.error(`Error rendering template ${templateName}:`, error);
       throw error;
     }
+  }
+
+  clearCache() {
+    console.log('Clearing template cache');
+    this.compiledTemplates.clear();
+  }
+
+  getCacheStats() {
+    return {
+      cacheSize: this.compiledTemplates.size,
+      cachedTemplates: Array.from(this.compiledTemplates.keys()),
+    };
   }
 }

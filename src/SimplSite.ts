@@ -19,6 +19,7 @@ export class SimplSite {
   private templateEngine: TemplateEngine;
   private siteUrl: string;
   private siteTitle: string;
+  private pageCache: Map<string, { content: string; status: number; lastModified: number }> = new Map();
 
 /**
    * Creates a new SimplSite instance.
@@ -103,36 +104,55 @@ export class SimplSite {
     return { content: processedContent, metadata };
   }
   
-  async renderContent(path: string, type: string, route: string): Promise<{ content: string; status: number }> {
-    try {
-      console.log(`Rendering content for path: ${path}, type: ${type}, route: ${route}`);
-      
-      const content = await this.getContent(path, type);
-      console.log('Raw content retrieved');
-  
-      const { content: processedContent, metadata } = await this.processContent(content, type, route);
-      console.log('Content processed');
-  
-      let templateContext: TemplateContext = {
-        content: processedContent,
-        metadata: metadata,
-        route: route,
-        siteTitle: this.siteTitle,
-      };
-  
-      // Allow plugins to extend template context
-      for (const plugin of this.plugins.values()) {
-        if (plugin.extendTemplate) {
-          templateContext = await plugin.extendTemplate(templateContext);
-        }
+async renderContent(path: string, type: string, route: string): Promise<{ content: string; status: number }> {
+  const cacheKey = `${path}:${type}:${route}`;
+  const cachedPage = this.pageCache.get(cacheKey);
+
+  // Check if the page is cached and not expired
+  if (cachedPage) {
+    const fileStats = await Deno.stat(join(this.contentSources.find(src => src.type === type)!.path, path));
+    if (fileStats.mtime && fileStats.mtime.getTime() <= cachedPage.lastModified) {
+      console.log(`Serving cached content for: ${path}`);
+      return { content: cachedPage.content, status: cachedPage.status };
+    }
+  }
+
+  try {
+    console.log(`Rendering content for path: ${path}, type: ${type}, route: ${route}`);
+    
+    const content = await this.getContent(path, type);
+    console.log('Raw content retrieved');
+
+    const { content: processedContent, metadata } = await this.processContent(content, type, route);
+    console.log('Content processed');
+
+    let templateContext: TemplateContext = {
+      content: processedContent,
+      metadata: metadata,
+      route: route,
+      siteTitle: this.siteTitle,
+    };
+
+    // Allow plugins to extend template context
+    for (const plugin of this.plugins.values()) {
+      if (plugin.extendTemplate) {
+        templateContext = await plugin.extendTemplate(templateContext);
       }
-  
-      const renderedContent = await this.templateEngine.render(type, templateContext);
-      console.log('Template rendering complete');
-      
-      return { content: renderedContent, status: 200 };
-    } catch (error) {
-      console.error('Error during content rendering:', error);
+    }
+
+    const renderedContent = await this.templateEngine.render(type, templateContext);
+    console.log('Template rendering complete');
+    
+    // Cache the rendered content
+    this.pageCache.set(cacheKey, { 
+      content: renderedContent, 
+      status: 200, 
+      lastModified: Date.now() 
+    });
+
+    return { content: renderedContent, status: 200 };
+  } catch (error) {
+    console.error('Error during content rendering:', error);
   
       // If the error is NotFound and we're not already trying to render the 404 page
       if (error.name === "NotFound" && path !== "404.md") {
@@ -173,33 +193,33 @@ export class SimplSite {
    * @param path - The path of the request.
    * @returns A promise that resolves to an object containing the content, content type, and status code.
    */
-  async handleRequest(path: string): Promise<{ content: string | Uint8Array; contentType: string; status: number }> {
-    console.log(`Handling request for path: ${path}`);
-  
-    path = path.replace(/^\//, '');
-    if (path === '') {
-      path = 'index';
-    }
-  
-    const staticFile = await this.serveStaticFile(path);
-    if (staticFile) {
-      console.log(`Serving static file: ${path}`);
-      return { ...staticFile, status: 200 };
-    }
-  
-    console.log(`Rendering content for path: ${path}`);
-    const originalPath = path;
-    path = path.endsWith('.md') ? path : path + '.md';
-  
-    for (const source of this.contentSources) {
-      if (originalPath.startsWith(source.route)) {
-        const contentPath = path.slice(source.route.length);
-        const { content, status } = await this.renderContent(contentPath, source.type, '/' + originalPath);
-        return { content, contentType: "text/html", status };
-      }
-    }
-  
-    const { content, status } = await this.renderContent(path, this.defaultContentType, '/' + originalPath);
-    return { content, contentType: "text/html", status };
+async handleRequest(path: string): Promise<{ content: string | Uint8Array; contentType: string; status: number }> {
+  console.log(`Handling request for path: ${path}`);
+
+  path = path.replace(/^\//, '');
+  if (path === '') {
+    path = 'index';
   }
+
+  const staticFile = await this.serveStaticFile(path);
+  if (staticFile) {
+    console.log(`Serving static file: ${path}`);
+    return { ...staticFile, status: 200 };
+  }
+
+  console.log(`Rendering content for path: ${path}`);
+  const originalPath = path;
+  path = path.endsWith('.md') ? path : path + '.md';
+
+  for (const source of this.contentSources) {
+    if (originalPath.startsWith(source.route)) {
+      const contentPath = path.slice(source.route.length);
+      const { content, status } = await this.renderContent(contentPath, source.type, '/' + originalPath);
+      return { content, contentType: "text/html", status };
+    }
+  }
+
+  const { content, status } = await this.renderContent(path, this.defaultContentType, '/' + originalPath);
+  return { content, contentType: "text/html", status };
+}
 }
