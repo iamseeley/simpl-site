@@ -249,7 +249,7 @@ export class SimplSite {
     this.pageCache.clear();
   }
 
-  getCacheStats() {
+  getCacheStats(): { cacheSize: number; cachedRoutes: string[] } {
     return {
       cacheSize: this.pageCache.size,
       cachedRoutes: Array.from(this.pageCache.keys()),
