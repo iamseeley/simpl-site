@@ -32,6 +32,10 @@ export const config: WebsiteConfig = {
       }
     }
   ],
+  caching: {
+    enabled: true,
+    excludedRoutes: ['/plugin-example', '/dynamic-content']
+  },
   defaultContentType: "page",
   templateDir: "./templates",
   customPluginsDir: "./plugins",

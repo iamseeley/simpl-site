@@ -19,9 +19,9 @@ export class SimplSite {
   private templateEngine: TemplateEngine;
   private siteUrl: string;
   private siteTitle: string;
-  private pageCache: Map<string, { content: string; status: number; lastModified: number }> = new Map();
+  private pageCache: Map<string, { content: string; contentType: string; status: number; lastModified: number }> = new Map();
 
-/**
+  /**
    * Creates a new SimplSite instance.
    * @param config - The configuration object for the website.
    */
@@ -55,8 +55,17 @@ export class SimplSite {
     }
   }
 
+  private shouldUseCache(path: string): boolean {
+    if (!this.config.caching?.enabled) {
+      return false;
+    }
+    if (this.config.caching.excludedRoutes) {
+      return !this.config.caching.excludedRoutes.some(route => path.startsWith(route));
+    }
+    return true;
+  }
 
-/**
+  /**
    * Retrieves content from the specified path and content type.
    * @param path - The path to the content file.
    * @param type - The type of content to retrieve.
@@ -71,7 +80,7 @@ export class SimplSite {
     return await Deno.readTextFile(fullPath);
   }
 
-    /**
+  /**
    * Processes the content through the configured plugins and markdown processor.
    * @param content - The raw content to process.
    * @param type - The type of content being processed.
@@ -104,75 +113,79 @@ export class SimplSite {
     return { content: processedContent, metadata };
   }
   
-async renderContent(path: string, type: string, route: string): Promise<{ content: string; status: number }> {
-  const cacheKey = `${path}:${type}:${route}`;
-  const cachedPage = this.pageCache.get(cacheKey);
-
-  // Check if the page is cached and not expired
-  if (cachedPage) {
-    const fileStats = await Deno.stat(join(this.contentSources.find(src => src.type === type)!.path, path));
-    if (fileStats.mtime && fileStats.mtime.getTime() <= cachedPage.lastModified) {
-      console.log(`Serving cached content for: ${path}`);
-      return { content: cachedPage.content, status: cachedPage.status };
-    }
-  }
-
-  try {
-    console.log(`Rendering content for path: ${path}, type: ${type}, route: ${route}`);
+  async renderContent(path: string, type: string, route: string): Promise<{ content: string; contentType: string; status: number }> {
+    const cacheKey = `${path}:${type}:${route}`;
     
-    const content = await this.getContent(path, type);
-    console.log('Raw content retrieved');
-
-    const { content: processedContent, metadata } = await this.processContent(content, type, route);
-    console.log('Content processed');
-
-    let templateContext: TemplateContext = {
-      content: processedContent,
-      metadata: metadata,
-      route: route,
-      siteTitle: this.siteTitle,
-    };
-
-    // Allow plugins to extend template context
-    for (const plugin of this.plugins.values()) {
-      if (plugin.extendTemplate) {
-        templateContext = await plugin.extendTemplate(templateContext);
+    if (this.shouldUseCache(route)) {
+      const cachedPage = this.pageCache.get(cacheKey);
+      if (cachedPage) {
+        const fileStats = await Deno.stat(join(this.contentSources.find(src => src.type === type)!.path, path));
+        if (fileStats.mtime && fileStats.mtime.getTime() <= cachedPage.lastModified) {
+          console.log(`Serving cached content for: ${path}`);
+          return cachedPage;
+        }
       }
     }
 
-    const renderedContent = await this.templateEngine.render(type, templateContext);
-    console.log('Template rendering complete');
-    
-    // Cache the rendered content
-    this.pageCache.set(cacheKey, { 
-      content: renderedContent, 
-      status: 200, 
-      lastModified: Date.now() 
-    });
+    try {
+      console.log(`Rendering content for path: ${path}, type: ${type}, route: ${route}`);
+      
+      const content = await this.getContent(path, type);
+      console.log('Raw content retrieved');
 
-    return { content: renderedContent, status: 200 };
-  } catch (error) {
-    console.error('Error during content rendering:', error);
-  
+      const { content: processedContent, metadata } = await this.processContent(content, type, route);
+      console.log('Content processed');
+
+      let templateContext: TemplateContext = {
+        content: processedContent,
+        metadata: metadata,
+        route: route,
+        siteTitle: this.siteTitle,
+      };
+
+      // Allow plugins to extend template context
+      for (const plugin of this.plugins.values()) {
+        if (plugin.extendTemplate) {
+          templateContext = await plugin.extendTemplate(templateContext);
+        }
+      }
+
+      const renderedContent = await this.templateEngine.render(type, templateContext);
+      console.log('Template rendering complete');
+      
+      const result = { content: renderedContent, contentType: "text/html", status: 200 };
+
+      // Cache the rendered content if caching is enabled for this route
+      if (this.shouldUseCache(route)) {
+        this.pageCache.set(cacheKey, { 
+          ...result,
+          lastModified: Date.now() 
+        });
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Error during content rendering:', error);
+    
       // If the error is NotFound and we're not already trying to render the 404 page
       if (error.name === "NotFound" && path !== "404.md") {
         try {
           console.log('Attempting to render 404 page');
           const { content: notFoundContent } = await this.renderContent("404.md", this.defaultContentType, "/404");
-          return { content: notFoundContent, status: 404 };
+          return { content: notFoundContent, contentType: "text/html", status: 404 };
         } catch (notFoundError) {
           console.error('Error rendering 404 page:', notFoundError);
         }
       }
-  
+    
       // Default error message if 404 page is not found or for other types of errors
       return {
         content: "<h1>404 - Page Not Found</h1><p>The requested page could not be found.</p>",
+        contentType: "text/html",
         status: 404
       };
     }
   }
-
 
   private async serveStaticFile(path: string): Promise<{ content: Uint8Array; contentType: string } | null> {
     const fullPath = join(this.assetsDir, path);
@@ -193,33 +206,53 @@ async renderContent(path: string, type: string, route: string): Promise<{ conten
    * @param path - The path of the request.
    * @returns A promise that resolves to an object containing the content, content type, and status code.
    */
-async handleRequest(path: string): Promise<{ content: string | Uint8Array; contentType: string; status: number }> {
-  console.log(`Handling request for path: ${path}`);
+  async handleRequest(path: string): Promise<{ content: string | Uint8Array; contentType: string; status: number }> {
+    const startTime = performance.now();
+    console.log(`Handling request for path: ${path}`);
 
-  path = path.replace(/^\//, '');
-  if (path === '') {
-    path = 'index';
-  }
-
-  const staticFile = await this.serveStaticFile(path);
-  if (staticFile) {
-    console.log(`Serving static file: ${path}`);
-    return { ...staticFile, status: 200 };
-  }
-
-  console.log(`Rendering content for path: ${path}`);
-  const originalPath = path;
-  path = path.endsWith('.md') ? path : path + '.md';
-
-  for (const source of this.contentSources) {
-    if (originalPath.startsWith(source.route)) {
-      const contentPath = path.slice(source.route.length);
-      const { content, status } = await this.renderContent(contentPath, source.type, '/' + originalPath);
-      return { content, contentType: "text/html", status };
+    path = path.replace(/^\//, '');
+    if (path === '') {
+      path = 'index';
     }
+
+    const staticFile = await this.serveStaticFile(path);
+    if (staticFile) {
+      console.log(`Serving static file: ${path}`);
+      return { ...staticFile, status: 200 };
+    }
+
+    console.log(`Rendering content for path: ${path}`);
+    const originalPath = path;
+    path = path.endsWith('.md') ? path : path + '.md';
+
+    let result;
+    for (const source of this.contentSources) {
+      if (originalPath.startsWith(source.route)) {
+        const contentPath = path.slice(source.route.length);
+        result = await this.renderContent(contentPath, source.type, '/' + originalPath);
+        break;
+      }
+    }
+
+    if (!result) {
+      result = await this.renderContent(path, this.defaultContentType, '/' + originalPath);
+    }
+
+    const endTime = performance.now();
+    console.log(`Request for ${path} took ${endTime - startTime}ms to process`);
+
+    return result;
   }
 
-  const { content, status } = await this.renderContent(path, this.defaultContentType, '/' + originalPath);
-  return { content, contentType: "text/html", status };
-}
+  clearCache() {
+    console.log('Clearing page cache');
+    this.pageCache.clear();
+  }
+
+  getCacheStats() {
+    return {
+      cacheSize: this.pageCache.size,
+      cachedRoutes: Array.from(this.pageCache.keys()),
+    };
+  }
 }

@@ -157,6 +157,14 @@ export interface WebsiteConfig {
    * This can be used in templates and metadata.
    */
   siteTitle?: string;
+  /**
+   * Caching pages and templates option.
+   * This is used to enable caching for sites and exclude some routes from caching
+   */
+  caching?: {
+    enabled: boolean;
+    excludedRoutes?: string[];
+  };
 }
 
 /**
