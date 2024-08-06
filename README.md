@@ -4,7 +4,7 @@
 
 SimplSite is a simple server-side rendered website builder built with Deno. 
 
-Create dynamic websites using Markdown content, Handlebars templates, and a powerful plugin system for extending functionality.
+Create dynamic websites using Markdown content, Handlebars templates, and a powerful plugin system for transforming content and extending templates.
 
 ## Features
 
