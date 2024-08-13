@@ -20,6 +20,7 @@ export class SimplSite {
   private siteUrl: string;
   private siteTitle: string;
   private pageCache: Map<string, { content: string; contentType: string; status: number; lastModified: number }> = new Map();
+  private staticFilePaths: Set<string> = new Set();
 
   /**
    * Creates a new SimplSite instance.
@@ -31,6 +32,7 @@ export class SimplSite {
     this.templateDir = config.templateDir;
     this.customPluginsDir = config.customPluginsDir;
     this.assetsDir = config.assetsDir || 'assets';
+    this.initializeStaticFilePaths();
     this.siteUrl = config.siteUrl || 'http://localhost:8000';
     this.siteTitle = config.siteTitle || "My Simpl Site";
     this.markdownProcessor = new MarkdownProcessor();
@@ -41,6 +43,23 @@ export class SimplSite {
     });
     this.initializePlugins(config.plugins);
   }
+
+  private async initializeStaticFilePaths() {
+    const walkDir = async (dir: string, baseDir: string = '') => {
+      for await (const entry of Deno.readDir(dir)) {
+        const path = join(baseDir, entry.name);
+        if (entry.isDirectory) {
+          await walkDir(join(dir, entry.name), path);
+        } else if (entry.isFile) {
+          this.staticFilePaths.add(path);
+        }
+      }
+    };
+
+    await walkDir(this.assetsDir);
+  }
+
+  
 
   private initializePlugins(pluginConfigs: PluginConfig[]) {
     for (const pluginConfig of pluginConfigs) {
@@ -187,41 +206,48 @@ export class SimplSite {
     }
   }
 
-  private async serveStaticFile(path: string): Promise<{ content: Uint8Array; contentType: string } | null> {
-    const fullPath = join(this.assetsDir, path);
+  private async serveStaticFile(path: string): Promise<{ content: ReadableStream<Uint8Array>; contentType: string; size: number } | null> {
+    const relativePath = path.startsWith('/') ? path.slice(1) : path;
+    if (!this.staticFilePaths.has(relativePath)) {
+      return null;
+    }
+
+    const fullPath = join(this.assetsDir, relativePath);
     try {
-      const content = await Deno.readFile(fullPath);
+      const file = await Deno.open(fullPath, { read: true });
+      const fileInfo = await file.stat();
       const mimeType = contentType(extname(fullPath)) || "application/octet-stream";
-      return { content, contentType: mimeType };
+      
+      return { 
+        content: file.readable, 
+        contentType: mimeType,
+        size: fileInfo.size
+      };
     } catch (error) {
-      if (error instanceof Deno.errors.NotFound) {
-        return null;
-      }
-      throw error;
+      console.error(`Error opening static file ${fullPath}:`, error);
+      return null;
     }
   }
+
 
   /**
    * Handles an incoming request and returns the appropriate response.
    * @param path - The path of the request.
    * @returns A promise that resolves to an object containing the content, content type, and status code.
    */
-  async handleRequest(path: string): Promise<{ content: string | Uint8Array; contentType: string; status: number }> {
-    const startTime = performance.now();
-    console.log(`Handling request for path: ${path}`);
+  async handleRequest(path: string): Promise<{ content: string | ReadableStream<Uint8Array>; contentType: string; status: number; size?: number }> {
+    // Check for static file first
+    const staticFile = await this.serveStaticFile(path);
+    if (staticFile) {
+      return { ...staticFile, status: 200 };
+    }
 
+    // If not a static file, proceed with content rendering
     path = path.replace(/^\//, '');
     if (path === '') {
       path = 'index';
     }
 
-    const staticFile = await this.serveStaticFile(path);
-    if (staticFile) {
-      console.log(`Serving static file: ${path}`);
-      return { ...staticFile, status: 200 };
-    }
-
-    console.log(`Rendering content for path: ${path}`);
     const originalPath = path;
     path = path.endsWith('.md') ? path : path + '.md';
 
@@ -237,9 +263,6 @@ export class SimplSite {
     if (!result) {
       result = await this.renderContent(path, this.defaultContentType, '/' + originalPath);
     }
-
-    const endTime = performance.now();
-    console.log(`Request for ${path} took ${endTime - startTime}ms to process`);
 
     return result;
   }
