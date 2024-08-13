@@ -48,10 +48,10 @@ async function initializeWebsite(projectName: string, isSmallWeb: boolean) {
   await ensureDir(join(projectDir, "assets", "css"));
   await ensureDir(join(projectDir, "assets", "js"));
 
-  const configContent = `import { WebsiteConfig } from "jsr:@iamseeley/simpl-site";
+  const configContent = `import { WebsiteConfig } from "simpl-site";
 import TableOfContentsPlugin from './plugins/TableOfContentsPlugin.ts';
 import LastModifiedPlugin from './plugins/LastModifiedPlugin.ts';
-import { registerPluginType } from 'jsr:@iamseeley/simpl-site/plugin-registry';
+import { registerPluginType } from 'simpl-site/plugin-registry';
 
 // register your plugins
 registerPluginType("TableOfContentsPlugin", TableOfContentsPlugin);
@@ -115,7 +115,7 @@ await Deno.writeTextFile(join(projectDir, "config.ts"), configContent);
   
 //   await Deno.writeTextFile(join(projectDir, "server.ts"), serverContent);
 
-  const smallWebServerContent = `import { SimplSite } from "jsr:@iamseeley/simpl-site";
+  const smallWebServerContent = `import { SimplSite } from "simpl-site";
 import { config } from "./config.ts";
 
 const website = new SimplSite(config);
@@ -151,7 +151,7 @@ console.log("Server running on http://localhost:8000");
 Deno.serve({ port: 8000 }, handleRequest);
 }`;
 
-const serverContent =`import { SimplSite } from "jsr:@iamseeley/simpl-site";
+const serverContent =`import { SimplSite } from "simpl-site";
 import { config } from "./config.ts";
 
 const website = new SimplSite(config);
@@ -328,6 +328,10 @@ title: 404
 await Deno.writeTextFile(join(projectDir, "content", "404.md"), fourOFour);
 
 const denoJsonContent = {
+  imports: {
+    "simpl-site": "jsr:@iamseeley/simpl-site",
+    "simpl-site/plugin-registry": "jsr:@iamseeley/simpl-site/plugin-registry"
+  },
   tasks: {
     dev: isSmallWeb 
       ? "deno run --allow-read --allow-write --allow-net --allow-run main.ts"
@@ -340,7 +344,7 @@ await Deno.writeTextFile(
   JSON.stringify(denoJsonContent, null, 2)
 );
 
-const tocPluginContent = `import type { Plugin, Metadata, PluginContext } from "jsr:@iamseeley/simpl-site";
+const tocPluginContent = `import type { Plugin, Metadata, PluginContext } from "simpl-site";
 
 interface TOCItem {
   level: number;
@@ -447,7 +451,7 @@ export default class TableOfContentsPlugin implements Plugin {
 
 await Deno.writeTextFile(join(projectDir, "plugins", "TableOfContentsPlugin.ts"), tocPluginContent);
 
-const lastModifiedPluginContent = `import type { Plugin, Metadata, PluginContext } from "jsr:@iamseeley/simpl-site";
+const lastModifiedPluginContent = `import type { Plugin, Metadata, PluginContext } from "simpl-site";
 import { join, basename } from "jsr:@std/path@0.218.2";
 
 interface LastModifiedConfig {
