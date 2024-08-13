@@ -29,7 +29,7 @@ deno run --allow-read --allow-write --allow-net --allow-run jsr:@iamseeley/simpl
 For convenience, you can install SimplSite globally:
 
 ```sh
-deno install --allow-read --allow-write --allow-net --allow-run -n simpl-site jsr:@iamseeley/simpl-site/cli
+deno install -g --allow-read --allow-write --allow-net --allow-run -n simpl-site jsr:@iamseeley/simpl-site/cli
 ```
 
 ### [Smallweb](https://github.com/pomdtr/smallweb?tab=readme-ov-file) Plugin
