@@ -32,14 +32,6 @@ For convenience, you can install SimplSite globally:
 deno install -g --allow-read --allow-write --allow-net --allow-run -n simpl-site jsr:@iamseeley/simpl-site/cli
 ```
 
-## [Smallweb](https://github.com/pomdtr/smallweb?tab=readme-ov-file) Setup
-Navigate to your Smallweb internet folder, and run the following command to initialize a simpl-site website with Smallweb configuration.
-
-```sh
-deno install -Agf jsr:@iamseeley/simpl-site/smallweb-simpl-site
-smallweb simpl-site
-```
-
 ## Quick Start
 
 1. Create a new SimplSite project:
@@ -289,6 +281,14 @@ If you prefer to self-host, you can run your SimplSite project on any VPS or ded
    ```
 
 5. Set up a reverse proxy with Nginx or Apache to handle HTTPS and domain routing.
+
+## [Smallweb](https://github.com/pomdtr/smallweb?tab=readme-ov-file) Setup
+Navigate to your Smallweb internet folder, and run the following command to initialize a simpl-site website with Smallweb configuration.
+
+```sh
+deno install -Agf jsr:@iamseeley/simpl-site/smallweb-simpl-site
+smallweb simpl-site
+```
 
 ## Contributing
 
