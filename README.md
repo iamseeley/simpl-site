@@ -32,7 +32,7 @@ For convenience, you can install SimplSite globally:
 deno install -g --allow-read --allow-write --allow-net --allow-run -n simpl-site jsr:@iamseeley/simpl-site/cli
 ```
 
-### [Smallweb](https://github.com/pomdtr/smallweb?tab=readme-ov-file) Plugin
+## [Smallweb](https://github.com/pomdtr/smallweb?tab=readme-ov-file) Setup
 Navigate to your Smallweb internet folder, and run the following command to initialize a simpl-site website with Smallweb configuration.
 
 ```sh
@@ -84,10 +84,10 @@ my-website/
 The `config.ts` file is where you define your website's structure and behavior. Here's an example configuration:
 
 ```typescript
-import { WebsiteConfig } from "jsr:@iamseeley/simpl-site";
+import { WebsiteConfig } from "simpl-site";
 import TableOfContentsPlugin from './plugins/TableOfContentsPlugin.ts';
 import LastModifiedPlugin from './plugins/LastModifiedPlugin.ts';
-import { registerPluginType } from 'jsr:@iamseeley/simpl-site/plugin-registry';
+import { registerPluginType } from 'simpl-site/plugin-registry';
 
 // Register your plugins
 registerPluginType("TableOfContentsPlugin", TableOfContentsPlugin);
@@ -178,7 +178,7 @@ SimplSite's plugin system allows you to extend and modify content processing. Pl
 To create a plugin, implement the `Plugin` interface:
 
 ```typescript
-import type { Plugin, Metadata, PluginContext } from "jsr:@iamseeley/simpl-site";
+import type { Plugin, Metadata, PluginContext } from "simpl-site";
 
 export default class MyCustomPlugin implements Plugin {
   name = "MyCustomPlugin";
